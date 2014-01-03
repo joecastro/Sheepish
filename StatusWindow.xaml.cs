@@ -12,9 +12,11 @@
         public StatusWindow()
         {
             InitializeComponent();
+
+            SourceInitialized += (sender, e) => OnStateChanged(EventArgs.Empty);
         }
 
-        protected override void OnStateChanged(System.EventArgs e)
+        protected override void OnStateChanged(EventArgs e)
         {
             base.OnStateChanged(e);
 
@@ -22,8 +24,6 @@
             // Trying to show it should just launch the Issues URL.
             if (WindowState != WindowState.Minimized)
             {
-                this.CountControl.Count = 15;
-                this.ResolvedCountControl.Count = 7;
                 this.Icon = this.CountControl.ImageSource;
                 this.TaskbarItemInfo = new System.Windows.Shell.TaskbarItemInfo
                 {

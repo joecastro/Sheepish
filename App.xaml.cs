@@ -1,7 +1,6 @@
 ﻿namespace Hbo.Sheepish
 {
     using Standard;
-    using System;
     using System.Threading.Tasks;
     using System.Windows;
 
@@ -13,8 +12,6 @@
 
             SingleInstance.SingleInstanceActivated += _SignalExternalCommandLineArgs;
             base.OnStartup(e);
-
-            TaskScheduler.UnobservedTaskException += (sender, e2) => { MessageBox.Show(e2.Exception.ToString()); };
 
             Settings settings = null;
             try
@@ -28,12 +25,16 @@
             if (settings == null)
             {
                 var loginWindow = new LoginWindow();
-                loginWindow.ShowDialog();
+                if (!(loginWindow.ShowDialog() ?? false))
+                {
+                    Application.Current.Shutdown(0);
+                    return;
+                }
                 settings = Settings.Create();
             }
 
+            ServiceProvider.OnLoggedIn();
             MainWindow.Show();
-
         }
 
         private void _SignalExternalCommandLineArgs(object sender, SingleInstanceEventArgs e)
