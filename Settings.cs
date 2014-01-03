@@ -25,7 +25,11 @@
         {
             var settings = new Settings();
 
-            if (!settings._VerifyAndUpdateUserAsync())
+            var t = settings._VerifyAndUpdateUserAsync();
+            t.Wait();
+
+            bool valid = t.Result;
+            if (!valid)
             {
                 throw new ArgumentException("oauthToken is invalid", "oauthToken");
             }
@@ -58,7 +62,10 @@
                     SecondaryQueryScope = json["secondary_scope"],
                 };
 
-                if (maybeSettings._VerifyAndUpdateUserAsync())
+                var t = maybeSettings._VerifyAndUpdateUserAsync();
+                t.Wait();
+
+                if (t.Result)
                 {
                     return maybeSettings;
                 }
@@ -77,12 +84,12 @@
             Utility.SafeDeleteFile(_Path);
         }
 
-        private bool _VerifyAndUpdateUserAsync()
+        private async Task<bool> _VerifyAndUpdateUserAsync()
         {
             try
             {
                 // Mostly just care that we don't get a 400 something from this call.
-                YouTrackService.User currentUser = ServiceProvider.YouTrackService.GetCurrentUser();
+                YouTrackService.User currentUser = await ServiceProvider.YouTrackService.GetCurrentUser();
                 UserLogin = currentUser.Login;
             }
             catch (WebException) { }

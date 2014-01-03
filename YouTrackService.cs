@@ -121,10 +121,10 @@
             await _PostAsync(uri, null);
         }
 
-        public User GetCurrentUser()
+        public async Task<User> GetCurrentUser()
         {
             var uri = String.Format("{0}/user/current", _BaseApiUrl);
-            var response = _Get(uri);
+            var response = await _GetAsync(uri);
             return new User
             {
                 Login = response.ToString()
