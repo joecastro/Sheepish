@@ -2,7 +2,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Login to YouTrack" SizeToContent="Height" Width="320"
-        FocusManager.FocusedElement="{Binding ElementName=UsernameInput}">
+    FocusManager.FocusedElement="{Binding ElementName=UsernameInput}" 
+    Height="179">
   <DockPanel>
     <StackPanel DockPanel.Dock="Bottom">
       <Button Content="sign in" Margin="10" Padding="7,2" HorizontalAlignment="Right" KeyboardNavigation.TabIndex="2" Click="_OnSignInClick"/>
