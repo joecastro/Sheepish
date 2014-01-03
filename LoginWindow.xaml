@@ -1,0 +1,32 @@
+﻿<Window x:Class="Hbo.Sheepish.LoginWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Login to YouTrack" SizeToContent="Height" Width="320">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Bottom">
+      <Button Content="sign in" Margin="10" Padding="7,2" HorizontalAlignment="Right" Click="_OnSignInClick"/>
+      <TextBlock x:Name="ErrorOutput" TextWrapping="Wrap" Foreground="#FFC51313" Text="{Binding Path=ErrorText}">
+        <TextBlock.Style>
+          <Style TargetType="TextBlock">
+            <Setter Property="Margin" Value="10"/>
+            <Style.Triggers>
+              <Trigger Property="Text" Value="">
+                <Setter Property="Margin" Value="0"/>
+                <Setter Property="Visibility" Value="Collapsed" />
+              </Trigger>
+            </Style.Triggers>
+          </Style>
+        </TextBlock.Style>
+      </TextBlock>
+    </StackPanel>
+    <DockPanel>
+      <Border DockPanel.Dock="Left" Margin="16" Width="48" Height="48" Background="{StaticResource SheepSilhouetteBrush}"/>
+      <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+        <Label Content="username" Margin="10,0" />
+        <TextBox x:Name="UsernameInput" Margin="10,0" HorizontalAlignment="Stretch" KeyDown="_OnTextBoxKeyDown" />
+        <Label Content="password" Margin="10,0"/>
+        <PasswordBox x:Name="PasswordInput" Margin="10,0" HorizontalAlignment="Stretch" KeyDown="_OnTextBoxKeyDown" />
+      </StackPanel>
+    </DockPanel>
+  </DockPanel>
+</Window>

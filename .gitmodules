@@ -1,0 +1,3 @@
+[submodule "standard.net"]
+	path = standard.net
+	url = git@github.com:joecastro/standard.net.git
