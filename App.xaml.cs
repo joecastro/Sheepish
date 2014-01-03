@@ -4,6 +4,7 @@
     using System;
     using System.Threading.Tasks;
     using System.Windows;
+    using System.Diagnostics;
 
     public partial class App
     {
@@ -29,7 +30,16 @@
             {
                 var loginWindow = new LoginWindow();
                 loginWindow.ShowDialog();
-                settings = Settings.Create();
+                if (loginWindow.DialogResult == true)
+                {
+                    settings = Settings.Create();
+                }
+                else
+                {
+                    // Terminate the app here if the login dialog was cancelled.
+                    Trace.TraceInformation("User terminated app at login screen");
+                    Application.Current.Shutdown(0);
+                }
             }
 
             MainWindow.Show();
