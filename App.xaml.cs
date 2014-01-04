@@ -12,7 +12,6 @@
         {
             MainWindow = new StatusWindow();
 
-            SingleInstance.SingleInstanceActivated += _SignalExternalCommandLineArgs;
             base.OnStartup(e);
 
             bool showLogin = false;
@@ -60,6 +59,7 @@
 
             ServiceProvider.OnLoggedIn();
             MainWindow.Show();
+            SingleInstance.SingleInstanceActivated += _SignalExternalCommandLineArgs;
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -69,6 +69,7 @@
 
         private void _SignalExternalCommandLineArgs(object sender, SingleInstanceEventArgs e)
         {
+            ((StatusWindow)MainWindow).ProcessCommandLineArgs(e.Args);
         }
     }
 }

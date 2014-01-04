@@ -1,8 +1,8 @@
 ﻿namespace Hbo.Sheepish
 {
-    using System;
-    using System.Reflection;
     using Standard;
+    using System;
+    using System.Windows;
 
     public static class Sheepish
     {
@@ -18,6 +18,12 @@
 
                 // Allow single instance code to perform cleanup operations
                 SingleInstance.Cleanup();
+            }
+            else if (System.Diagnostics.Debugger.IsAttached)
+            {
+                MessageBox.Show(
+                    "The application was started but the startup arguments are being delegated to another running instance.",
+                    "Sheepish", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }
