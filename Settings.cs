@@ -1,39 +1,26 @@
 ﻿namespace Hbo.Sheepish
 {
+    using Newtonsoft.Json;
+    using Standard;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Net;
-    using System.Threading.Tasks;
-    using Newtonsoft.Json;
-    using Standard;
 
     public class Settings
     {
         private static readonly string _SettingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Sheepish");
         private static readonly string _Path = Path.Combine(_SettingsDirectory, "Settings.json");
 
-        public string UserLogin { get; private set; }
+        public string UserLogin { get; set; }
         public string PrimaryQuery { get; set; }
         public string PrimaryQueryScope { get; set; }
         public string SecondaryQuery { get; set; }
         public string SecondaryQueryScope { get; set; }
 
-        private Settings() { }
+        public Settings() {}
 
-        public static Settings Create()
-        {
-            var settings = new Settings();
-
-            if (!settings._VerifyAndUpdateUserAsync())
-            {
-                throw new ArgumentException("oauthToken is invalid", "oauthToken");
-            }
-
-            return settings;
-        }
-
-        public static Settings TryLoad()
+        public static Settings Load()
         {
             Utility.EnsureDirectory(_SettingsDirectory);
             try
@@ -52,18 +39,14 @@
 
                 var maybeSettings = new Settings
                 {
+                    UserLogin = json["login"],
                     PrimaryQuery = json["primary_query"],
                     PrimaryQueryScope = json["primary_scope"],
                     SecondaryQuery = json["secondary_query"],
                     SecondaryQueryScope = json["secondary_scope"],
                 };
 
-                if (maybeSettings._VerifyAndUpdateUserAsync())
-                {
-                    return maybeSettings;
-                }
-
-                return null;
+                return maybeSettings;
             }
             catch { }
             return null;
@@ -72,21 +55,9 @@
         /// <summary>
         /// Clears the Settings file from disk.
         /// </summary>
-        public static void Clear()
+        public void ClearLogin()
         {
-            Utility.SafeDeleteFile(_Path);
-        }
-
-        private bool _VerifyAndUpdateUserAsync()
-        {
-            try
-            {
-                // Mostly just care that we don't get a 400 something from this call.
-                YouTrackService.User currentUser = ServiceProvider.YouTrackService.GetCurrentUser();
-                UserLogin = currentUser.Login;
-            }
-            catch (WebException) { }
-            return UserLogin != null;
+            UserLogin = "";
         }
 
         public void Save()

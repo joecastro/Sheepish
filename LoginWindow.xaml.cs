@@ -68,7 +68,7 @@
             }
         }
 
-        private async void _OnSignInClick(object sender, System.Windows.RoutedEventArgs e)
+        private void _OnSignInClick(object sender, System.Windows.RoutedEventArgs e)
         {
             if (!CanSubmit)
             {
@@ -79,7 +79,7 @@
             try
             {
                 Processing = true;
-                await ServiceProvider.YouTrackService.Login(UsernameInput.Text, PasswordInput.Password);
+                ServiceProvider.YouTrackService.Login(UsernameInput.Text, PasswordInput.Password);
                 DialogResult = true;
                 this.Close();
             }

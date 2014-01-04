@@ -27,8 +27,9 @@
 
         private static readonly string _UserAgentString = "HBO Sheepish Client";
         private readonly string _BaseApiUrl;
+        private static readonly CookieContainer _cookieJar = new CookieContainer();
 
-        #region Async Http Verb Implementations
+        #region Http Verb Implementations
 
         private static XDocument _Get(string path)
         {
@@ -36,6 +37,7 @@
             webRequest.Method = "GET";
             webRequest.Accept = "application/xml";
             webRequest.UserAgent = _UserAgentString;
+            webRequest.CookieContainer = _cookieJar;
 
             WebResponse response = webRequest.GetResponse();
             try
@@ -51,40 +53,21 @@
             }
         }
 
-        private static async Task<XDocument> _GetAsync(string path)
-        {
-            var webRequest = (HttpWebRequest)HttpWebRequest.Create(path);
-            webRequest.Method = "GET";
-            webRequest.Accept = "application/xml";
-            webRequest.UserAgent = _UserAgentString;
-
-            WebResponse response = await webRequest.GetResponseAsync();
-            try
-            {
-                using (var reader = new StreamReader(response.GetResponseStream()))
-                {
-                    return XDocument.Parse(await reader.ReadToEndAsync());
-                }
-            }
-            finally
-            {
-                response.Close();
-            }
-        }
-
-        private static async Task<XDocument> _PostAsync(string path, string postData)
+        private static XDocument _Post(string path, string postData)
         {
             var webRequest = (HttpWebRequest)HttpWebRequest.Create(path);
             webRequest.Method = "POST";
             webRequest.UserAgent = _UserAgentString;
             webRequest.Accept = "application/xml";
             webRequest.ContentType = "text/plain; charset=utf-8";
+            webRequest.CookieContainer = _cookieJar;
+
             if (!string.IsNullOrEmpty(postData))
             {
                 byte[] dataBytes = Encoding.UTF8.GetBytes(postData);
 
                 webRequest.ContentLength = postData.Length;
-                using (var dataStream = await webRequest.GetRequestStreamAsync())
+                using (var dataStream = webRequest.GetRequestStream())
                 {
                     dataStream.Write(dataBytes, 0, dataBytes.Length);
                 }
@@ -94,12 +77,12 @@
                 webRequest.ContentLength = 0;
             }
 
-            var response = await webRequest.GetResponseAsync();
+            var response = webRequest.GetResponse();
             try
             {
                 using (var reader = new StreamReader(response.GetResponseStream()))
                 {
-                    return XDocument.Parse(await reader.ReadToEndAsync());
+                    return XDocument.Parse(reader.ReadToEnd());
                 }
             }
             finally
@@ -115,10 +98,10 @@
             _BaseApiUrl = baseUri;
         }
 
-        public async Task Login(string username, string password) 
+        public void Login(string username, string password) 
         {
             var uri = String.Format("{0}/user/login?login={1}&password={2}", _BaseApiUrl, username, password);
-            await _PostAsync(uri, null);
+            _Post(uri, null);
         }
 
         public User GetCurrentUser()
@@ -131,16 +114,17 @@
             };
         }
 
-        public async Task<List<Project>> GetProjects()
+        public List<Project> GetProjects()
         {
-            var response = await _GetAsync(String.Format("{0}/project/all", _BaseApiUrl));
+            var response = _Get(String.Format("{0}/project/all", _BaseApiUrl));
             return new List<Project> 
             {
                 new Project { Name = response.ToString() }
             };
         }
 
-        public int GetIssueCount(string projectShortName, string query) {
+        public int GetIssueCount(string projectShortName, string query)
+        {
             return query.GetHashCode() & 0xFF;
         }
     }
