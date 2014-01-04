@@ -6,6 +6,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Net;
+    using System.Runtime.Serialization.Formatters.Binary;
 
     public class Settings
     {
@@ -17,8 +18,14 @@
         public string PrimaryQueryScope { get; set; }
         public string SecondaryQuery { get; set; }
         public string SecondaryQueryScope { get; set; }
+        public CookieContainer CookieContainer { get; private set; }
 
-        public Settings() {}
+        private static readonly BinaryFormatter _formatter = new BinaryFormatter();
+
+        public Settings()
+        {
+            CookieContainer = new CookieContainer();
+        }
 
         public static Settings Load()
         {
@@ -37,6 +44,17 @@
                     return null;
                 }
 
+                CookieContainer jar = null;
+
+                try
+                {
+                    var serializedJar = System.Convert.FromBase64String(json["cookie_jar"].ToString());
+                    jar = (CookieContainer)_formatter.Deserialize(new MemoryStream(serializedJar));
+                }
+                catch
+                {
+                }
+
                 var maybeSettings = new Settings
                 {
                     UserLogin = json["login"],
@@ -44,6 +62,7 @@
                     PrimaryQueryScope = json["primary_scope"],
                     SecondaryQuery = json["secondary_query"],
                     SecondaryQueryScope = json["secondary_scope"],
+                    CookieContainer = jar ?? new CookieContainer(),
                 };
 
                 return maybeSettings;
@@ -58,10 +77,18 @@
         public void ClearLogin()
         {
             UserLogin = "";
+            CookieContainer = new CookieContainer();
         }
 
         public void Save()
         {
+            string serializedJar = null;
+            using (var memstream = new MemoryStream())
+            {
+                _formatter.Serialize(memstream, CookieContainer);
+                serializedJar = Convert.ToBase64String(memstream.ToArray());
+            }
+
             var dict = new Dictionary<string, object>
             {
                 { "description", "Cached settings for Sheepish" },
@@ -72,6 +99,7 @@
                 { "primary_scope", PrimaryQueryScope },
                 { "secondary_query", SecondaryQuery },
                 { "secondary_scope", SecondaryQueryScope },
+                { "cookie_jar", serializedJar },
             };
 
             Utility.EnsureDirectory(Path.GetDirectoryName(_Path));

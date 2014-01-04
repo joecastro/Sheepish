@@ -16,9 +16,9 @@ using System.Windows.Threading;
             Interval = _PollInterval,
         };
 
-        static ServiceProvider()
+        public static void Initialize(Settings settings)
         {
-            YouTrackService = new YouTrackService("https://youtrack.hbo.com/youtrack/rest");
+            YouTrackService = new YouTrackService("https://youtrack.hbo.com/youtrack/rest", settings.CookieContainer);
             ViewModel = new ViewModel();
 
             ViewModel.PrimaryQuery = "for: me #Open";

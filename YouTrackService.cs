@@ -27,17 +27,17 @@
 
         private static readonly string _UserAgentString = "HBO Sheepish Client";
         private readonly string _BaseApiUrl;
-        private static readonly CookieContainer _cookieJar = new CookieContainer();
+        private readonly CookieContainer _CookieJar = new CookieContainer();
 
         #region Http Verb Implementations
 
-        private static XDocument _Get(string path)
+        private static XDocument _Get(string path, CookieContainer jar)
         {
             var webRequest = (HttpWebRequest)HttpWebRequest.Create(path);
             webRequest.Method = "GET";
             webRequest.Accept = "application/xml";
             webRequest.UserAgent = _UserAgentString;
-            webRequest.CookieContainer = _cookieJar;
+            webRequest.CookieContainer = jar;
 
             WebResponse response = webRequest.GetResponse();
             try
@@ -53,14 +53,14 @@
             }
         }
 
-        private static XDocument _Post(string path, string postData)
+        private static XDocument _Post(string path, string postData, CookieContainer jar)
         {
             var webRequest = (HttpWebRequest)HttpWebRequest.Create(path);
             webRequest.Method = "POST";
             webRequest.UserAgent = _UserAgentString;
             webRequest.Accept = "application/xml";
             webRequest.ContentType = "text/plain; charset=utf-8";
-            webRequest.CookieContainer = _cookieJar;
+            webRequest.CookieContainer = jar;
 
             if (!string.IsNullOrEmpty(postData))
             {
@@ -93,21 +93,22 @@
 
         #endregion
 
-        public YouTrackService(string baseUri)
+        public YouTrackService(string baseUri, CookieContainer jar)
         {
             _BaseApiUrl = baseUri;
+            _CookieJar = jar;
         }
 
         public void Login(string username, string password) 
         {
             var uri = String.Format("{0}/user/login?login={1}&password={2}", _BaseApiUrl, username, password);
-            _Post(uri, null);
+            _Post(uri, null, _CookieJar);
         }
 
         public User GetCurrentUser()
         {
             var uri = String.Format("{0}/user/current", _BaseApiUrl);
-            var response = _Get(uri);
+            var response = _Get(uri, _CookieJar);
             return new User
             {
                 Login = response.ToString()
@@ -116,7 +117,7 @@
 
         public List<Project> GetProjects()
         {
-            var response = _Get(String.Format("{0}/project/all", _BaseApiUrl));
+            var response = _Get(String.Format("{0}/project/all", _BaseApiUrl), _CookieJar);
             return new List<Project> 
             {
                 new Project { Name = response.ToString() }

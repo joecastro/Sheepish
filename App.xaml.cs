@@ -15,6 +15,8 @@
             SingleInstance.SingleInstanceActivated += _SignalExternalCommandLineArgs;
             base.OnStartup(e);
 
+            bool showLogin = false;
+
             _settings = Settings.Load();
             if (_settings == null)
             {
@@ -23,8 +25,12 @@
                     PrimaryQuery = "for: me #Open",
                     SecondaryQuery = "for: me #Resolved",
                 };
+                showLogin = true;
             }
-            else if (!string.IsNullOrEmpty(_settings.UserLogin))
+
+            ServiceProvider.Initialize(_settings);
+
+            if (!showLogin)
             {
                 // Verify that the userlogin matches our cookie's credentials
                 try
@@ -33,13 +39,13 @@
                     YouTrackService.User currentUser = ServiceProvider.YouTrackService.GetCurrentUser();
                     if (_settings.UserLogin != currentUser.Login)
                     {
-                        _settings.UserLogin = null;
+                        showLogin = true;
                     }
                 }
                 catch (WebException) { }
             }
 
-            if (string.IsNullOrEmpty(_settings.UserLogin))
+            if (showLogin)
             {
                 var loginWindow = new LoginWindow();
                 if (!(loginWindow.ShowDialog() ?? false))
