@@ -115,14 +115,18 @@
             _BaseApiUrl = baseUri;
         }
 
-        public async Task Login(string username, string password) 
+        public async Task<bool> LoginAsync(string username, string password) 
         {
             var uri = String.Format("{0}/user/login?login={1}&password={2}", _BaseApiUrl, username, password);
-            await _PostAsync(uri, null);
+            var doc = await _PostAsync(uri, null);
+            return doc.Element("login").Value.ToLower() == "ok";
         }
 
-        public async Task<User> GetCurrentUser()
+        public async Task<User> GetCurrentUserAsync()
         {
+            // BUG: Need to pass-in the user session key returned when 
+            // logging the user into YouTrack.
+
             var uri = String.Format("{0}/user/current", _BaseApiUrl);
             var response = await _GetAsync(uri);
             return new User

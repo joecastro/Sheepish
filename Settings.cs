@@ -21,14 +21,11 @@
 
         private Settings() { }
 
-        public static Settings Create()
+        public async static Task<Settings> CreateAsync()
         {
             var settings = new Settings();
 
-            var t = settings._VerifyAndUpdateUserAsync();
-            t.Wait();
-
-            bool valid = t.Result;
+            bool valid = await settings._VerifyAndUpdateUserAsync();
             if (!valid)
             {
                 throw new ArgumentException("oauthToken is invalid", "oauthToken");
@@ -37,23 +34,19 @@
             return settings;
         }
 
-        public static Settings TryLoad()
+        public async static Task<Settings> LoadAsync()
         {
+            Settings settings = null;
             Utility.EnsureDirectory(_SettingsDirectory);
-            try
+
+            dynamic json = null;
+            using (var settingsStream = new StreamReader(_Path))
             {
-                dynamic json = null;
-                using (var settingsStream = new StreamReader(_Path))
-                {
-                    json = JsonConvert.DeserializeObject<dynamic>(settingsStream.ReadToEnd());
-                }
+                json = JsonConvert.DeserializeObject<dynamic>(settingsStream.ReadToEnd());
+            }
 
-                if ((int)json["version"] != 1)
-                {
-                    // Don't know how to deserialize this.
-                    return null;
-                }
-
+            if ((int)json["version"] == 1)
+            {
                 var maybeSettings = new Settings
                 {
                     PrimaryQuery = json["primary_query"],
@@ -62,18 +55,12 @@
                     SecondaryQueryScope = json["secondary_scope"],
                 };
 
-                var t = maybeSettings._VerifyAndUpdateUserAsync();
-                t.Wait();
-
-                if (t.Result)
+                if (await maybeSettings._VerifyAndUpdateUserAsync())
                 {
-                    return maybeSettings;
+                    settings = maybeSettings;
                 }
-
-                return null;
             }
-            catch { }
-            return null;
+            return settings;
         }
 
         /// <summary>
@@ -89,7 +76,7 @@
             try
             {
                 // Mostly just care that we don't get a 400 something from this call.
-                YouTrackService.User currentUser = await ServiceProvider.YouTrackService.GetCurrentUser();
+                YouTrackService.User currentUser = await ServiceProvider.YouTrackService.GetCurrentUserAsync();
                 UserLogin = currentUser.Login;
             }
             catch (WebException) { }

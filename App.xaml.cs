@@ -4,32 +4,42 @@
     using System;
     using System.Threading.Tasks;
     using System.Windows;
+    using System.Diagnostics;
+    using System.IO;
 
     public partial class App
     {
-        protected override void OnStartup(StartupEventArgs e)
+        protected async override void OnStartup(StartupEventArgs e)
         {
             MainWindow = new StatusWindow();
 
             SingleInstance.SingleInstanceActivated += _SignalExternalCommandLineArgs;
             base.OnStartup(e);
 
-            TaskScheduler.UnobservedTaskException += (sender, e2) => { MessageBox.Show(e2.Exception.ToString()); };
-
             Settings settings = null;
             try
             {
-                settings = Settings.TryLoad();
+                settings = await Settings.LoadAsync();
             }
-            catch
+            catch (FileNotFoundException)
             {
+                // Eat FnF exceptions!
             }
 
             if (settings == null)
-            {
+            { 
                 var loginWindow = new LoginWindow();
                 loginWindow.ShowDialog();
-                settings = Settings.Create();
+                if (loginWindow.DialogResult == true)
+                {
+                    settings = await Settings.CreateAsync();
+                }
+                else
+                {
+                    // Terminate the app here if the login dialog was cancelled.
+                    Trace.TraceInformation("User terminated app at login screen");
+                    Application.Current.Shutdown(0);
+                }
             }
 
             MainWindow.Show();
