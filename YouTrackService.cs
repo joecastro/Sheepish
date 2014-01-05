@@ -7,7 +7,6 @@
     using System.Net;
     using System.Text;
     using System.Threading;
-    using System.Threading.Tasks;
     using System.Xml.Linq;
 
     // General documentation for the YouTrack REST APIs: http://confluence.jetbrains.com/display/YTD5/YouTrack+REST+API+Reference

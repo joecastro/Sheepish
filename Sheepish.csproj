@@ -89,6 +89,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CountControl.cs" />
+    <Compile Include="SheepCounterControl.xaml.cs">
+      <DependentUpon>SheepCounterControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ElementToImageSourceConverter.cs" />
     <Compile Include="LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
@@ -159,6 +162,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="SheepCounterControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="LoginWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

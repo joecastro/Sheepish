@@ -4,12 +4,11 @@
     xmlns:sheepish="clr-namespace:Hbo.Sheepish"
     WindowStyle="None"
     AllowsTransparency="True"
-    Opacity="0"
-    Title="Sheepish for YouTrack" Height="350" Width="525"
+    Opacity="1"
+    Title="Sheepish for YouTrack" Height="300" Width="600"
     WindowState="Normal"
-    Icon="{Binding ElementName=CountControl, Path=ImageSource}">
+    Icon="{Binding ElementName=CountControl, Converter={StaticResource ElementToImageSourceConverter}}">
   <Window.Resources>
-    <sheepish:ElementToImageSourceConverter x:Key="ElementToImageSourceConverter"/>
     <Border x:Key="RefreshElement" Background="{StaticResource RefreshBrush}"/>
   </Window.Resources>
   <Window.TaskbarItemInfo>
@@ -19,8 +18,29 @@
       </TaskbarItemInfo.ThumbButtonInfos>
     </TaskbarItemInfo>
   </Window.TaskbarItemInfo>
-    <Grid x:Name="MainGrid">
-        <sheepish:CountControl x:Name="CountControl" Background="Green" Count="{Binding Source={x:Static sheepish:ServiceProvider.ViewModel}, Path=PrimaryCount}"/>
-        <sheepish:CountControl x:Name="SecondaryCountControl" Background="Gold" Count="{Binding Source={x:Static sheepish:ServiceProvider.ViewModel}, Path=SecondaryCount}"/>
-    </Grid>
+  <Grid x:Name="MainGrid">
+    <Grid.Background>
+      <LinearGradientBrush StartPoint=".5,0" EndPoint=".5,1">
+        <GradientStop Color="SkyBlue" Offset="0"/>
+        <GradientStop Color="SkyBlue" Offset=".6"/>
+        <GradientStop Color="Green" Offset=".65"/>
+      </LinearGradientBrush>
+    </Grid.Background>
+    <sheepish:SheepCounterControl x:Name="SecondaryCountControl" Background="Gold" Count="{Binding Source={x:Static sheepish:ServiceProvider.ViewModel}, Path=SecondaryCount}" RenderTransformOrigin=".5,.5">
+      <sheepish:SheepCounterControl.RenderTransform>
+        <TransformGroup>
+          <ScaleTransform ScaleX=".6" ScaleY=".6"/>
+          <TranslateTransform X="160" Y="30"/>
+        </TransformGroup>
+      </sheepish:SheepCounterControl.RenderTransform>
+    </sheepish:SheepCounterControl>
+    <sheepish:SheepCounterControl x:Name="CountControl" Background="Firebrick" Count="{Binding Source={x:Static sheepish:ServiceProvider.ViewModel}, Path=PrimaryCount}" RenderTransformOrigin=".5,.5">
+      <sheepish:SheepCounterControl.RenderTransform>
+        <TransformGroup>
+          <ScaleTransform ScaleX=".6" ScaleY=".6"/>
+          <TranslateTransform X="-130" Y="30"/>
+        </TransformGroup>
+      </sheepish:SheepCounterControl.RenderTransform>
+    </sheepish:SheepCounterControl>
+  </Grid>
 </Window>

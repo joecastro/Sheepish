@@ -9,9 +9,13 @@
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Windows.Shell;
+using System.Windows.Interop;
 
     public partial class StatusWindow
     {
+        private readonly ElementToImageSourceConverter _elementToImageSourceConverter;
+        private HwndSource _hwndSource;
+
         public static DependencyProperty HasMoreIssuesProperty = DependencyProperty.Register(
             "HasMoreIssues",
             typeof(bool),
@@ -42,13 +46,31 @@
         {
             InitializeComponent();
 
-            Utility.AddDependencyPropertyChangeListener(CountControl, CountControl.CountProperty, (sender, e) => { });
-            Utility.AddDependencyPropertyChangeListener(SecondaryCountControl, CountControl.CountProperty, (sender, e) => { });
+            _elementToImageSourceConverter = (ElementToImageSourceConverter)FindResource("ElementToImageSourceConverter");
+
+            Utility.AddDependencyPropertyChangeListener(CountControl, SheepCounterControl.CountProperty, (sender, e) => { });
+            Utility.AddDependencyPropertyChangeListener(SecondaryCountControl, SheepCounterControl.CountProperty, (sender, e) => { });
 
             // Let the window get created and shown normally first, and then explicitly minimized.
             // If this happens too early then the Shell tries to be helpful and create a fake preview window
             // when hovering over the taskbar item.
-            SourceInitialized += (sender, e) => Dispatcher.BeginInvoke((Action)_ForceHidden);
+            SourceInitialized += (sender, e) =>
+            {
+                // But clear opacity immediately (keeping it opaque for the sake of the design surface)
+                Opacity = 0;
+                Dispatcher.BeginInvoke((Action)(() =>
+                    {
+                        _ForceHidden();
+                        _OnIssueCountChanged();
+                    }));
+
+                IntPtr hwnd = new WindowInteropHelper(this).Handle;
+                _hwndSource = HwndSource.FromHwnd(hwnd);
+                _hwndSource.AddHook(_WndProc);
+
+                //NativeMethods.DwmSetWindowAttributeForceIconicRepresentation(hwnd, true);
+                //NativeMethods.DwmSetWindowAttributeHasIconicBitmap(hwnd, true);
+            };
 
             StateChanged += (sender, e) => _ForceHidden();
             Activated += (sender, e) => _OnActivate();
@@ -77,7 +99,7 @@
                     ? TaskbarItemProgressState.Normal
                     : TaskbarItemProgressState.None;
 
-            ImageSource overlay = SecondaryCountControl.Count == 0 ? null : SecondaryCountControl.ImageSource;
+            ImageSource overlay = SecondaryCountControl.Count == 0 ? null : (ImageSource)_elementToImageSourceConverter.Convert(SecondaryCountControl, typeof(ImageSource), "Small", null);
 
             this.TaskbarItemInfo.ProgressState = state;
             this.TaskbarItemInfo.Overlay = overlay;
@@ -122,5 +144,21 @@
         {
             ServiceProvider.RequestRefresh();
         }
+
+        #region Win32 interop stuff for thumbnail preview
+
+        private IntPtr _WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            var message = (WM)msg;
+            if (message == WM.DWMSENDICONICTHUMBNAIL)
+            { 
+            }
+            else if (message == WM.DWMSENDICONICLIVEPREVIEWBITMAP)
+            { 
+            }
+
+            return IntPtr.Zero;
+        }
+        #endregion
     }
 }
