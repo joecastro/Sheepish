@@ -88,7 +88,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CountControl.cs" />
     <Compile Include="SheepCounterControl.xaml.cs">
       <DependentUpon>SheepCounterControl.xaml</DependentUpon>
     </Compile>
