@@ -18,7 +18,16 @@
     <StreamGeometry>M 202.00 253.69 C 202.68 255.09 203.07 256.67 204.12 257.86 C 206.10 259.34 208.65 259.26 211.01 259.29 C 210.85 269.84 210.95 280.40 210.96 290.95 C 209.37 288.88 207.78 286.82 206.35 284.65 C 204.94 286.85 203.48 289.02 202.00 291.17 C 202.11 278.68 202.12 266.19 202.00 253.69 Z</StreamGeometry>
     <StreamGeometry>M 261.02 258.95 C 261.95 257.95 262.67 256.77 263.49 255.68 C 262.75 259.77 263.66 263.88 263.45 268.00 C 263.28 275.91 263.76 283.83 263.17 291.73 C 261.72 289.89 260.42 287.94 259.00 286.08 C 257.40 288.12 255.93 290.26 254.34 292.31 C 254.36 281.69 254.50 271.06 254.28 260.44 C 256.53 260.22 259.33 260.84 261.02 258.95 Z</StreamGeometry>
   </GeometryGroup>
-  
+
+  <!-- Creative Commons license, https://github.com/Templarian/WindowsIcons/blob/master/WindowsPhone/license.txt -->
+  <StreamGeometry x:Key="RefreshGeometry">F1 M 38,20.5833C 42.9908,20.5833 47.4912,22.6825 50.6667,26.046L 50.6667,17.4167L 55.4166,22.1667L 55.4167,34.8333L 42.75,34.8333L 38,30.0833L 46.8512,30.0833C 44.6768,27.6539 41.517,26.125 38,26.125C 31.9785,26.125 27.0037,30.6068 26.2296,36.4167L 20.6543,36.4167C 21.4543,27.5397 28.9148,20.5833 38,20.5833 Z M 38,49.875C 44.0215,49.875 48.9963,45.3932 49.7703,39.5833L 55.3457,39.5833C 54.5457,48.4603 47.0852,55.4167 38,55.4167C 33.0092,55.4167 28.5088,53.3175 25.3333,49.954L 25.3333,58.5833L 20.5833,53.8333L 20.5833,41.1667L 33.25,41.1667L 38,45.9167L 29.1487,45.9167C 31.3231,48.3461 34.483,49.875 38,49.875 Z</StreamGeometry>
+  <Path x:Key="RefreshPath" Width="34.8333" Height="41.1667" Fill="#FF000000" Data="{StaticResource RefreshGeometry}"/>
+  <DrawingBrush x:Key="RefreshBrush" Stretch="Uniform">
+    <DrawingBrush.Drawing>
+      <GeometryDrawing Brush="White" Geometry="{StaticResource RefreshGeometry}"/>
+    </DrawingBrush.Drawing>
+  </DrawingBrush>
+
   <DrawingBrush x:Key="SheepSilhouetteBrush" Stretch="Uniform">
     <DrawingBrush.Drawing>
       <GeometryDrawing Brush="Black" Geometry="{StaticResource SheepSilhouetteGeometry}"/>

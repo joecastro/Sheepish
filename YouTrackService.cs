@@ -6,6 +6,7 @@
     using System.IO;
     using System.Net;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Xml.Linq;
 
@@ -28,6 +29,8 @@
         private static readonly string _UserAgentString = "HBO Sheepish Client";
         private readonly string _BaseApiUrl;
         private readonly CookieContainer _CookieJar = new CookieContainer();
+        private const int _MaxRetryCount = 8;
+        private static readonly TimeSpan _RetryDelay = new TimeSpan(1000);
 
         #region Http Verb Implementations
 
@@ -126,7 +129,18 @@
 
         public int GetIssueCount(string projectShortName, string query)
         {
-            return query.GetHashCode() & 0xFF;
+            for (int i = 0; i < _MaxRetryCount; ++i)
+            {
+                var path = string.Format("{0}/issue/count?filter={1}", _BaseApiUrl, Utility.UrlEncode(query));
+                var response = _Get(path, _CookieJar);
+                int count = int.Parse(response.Root.Value);
+                if (count != -1)
+                {
+                    return count;
+                }
+                Thread.Sleep(_RetryDelay);
+            }
+            throw new Exception("Unable to determine number of issues from server.");
         }
     }
 }

@@ -8,34 +8,79 @@
     using System.Windows.Media;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Windows.Shell;
 
     public partial class StatusWindow
     {
+        public static DependencyProperty HasMoreIssuesProperty = DependencyProperty.Register(
+            "HasMoreIssues",
+            typeof(bool),
+            typeof(StatusWindow),
+            new UIPropertyMetadata(false,
+                (d, e) => ((StatusWindow)d)._OnIssueCountChanged()));
+
+        public bool HasMoreIssues
+        {
+            get { return (bool)GetValue(HasMoreIssuesProperty); }
+            set { SetValue(HasMoreIssuesProperty, value); }
+        }
+
+        public static DependencyProperty HasLessIssuesProperty = DependencyProperty.Register(
+            "HasLessIssues",
+            typeof(bool),
+            typeof(StatusWindow),
+            new UIPropertyMetadata(false,
+                (d, e) => ((StatusWindow)d)._OnIssueCountChanged()));
+
+        public bool HasLessIssues
+        {
+            get { return (bool)GetValue(HasLessIssuesProperty); }
+            set { SetValue(HasLessIssuesProperty, value); }
+        }
+
         public StatusWindow()
         {
             InitializeComponent();
 
-            SourceInitialized += (sender, e) => OnStateChanged(EventArgs.Empty);
+            Utility.AddDependencyPropertyChangeListener(CountControl, CountControl.CountProperty, (sender, e) => { });
+            Utility.AddDependencyPropertyChangeListener(SecondaryCountControl, CountControl.CountProperty, (sender, e) => { });
+
+            // Let the window get created and shown normally first, and then explicitly minimized.
+            // If this happens too early then the Shell tries to be helpful and create a fake preview window
+            // when hovering over the taskbar item.
+            SourceInitialized += (sender, e) => Dispatcher.BeginInvoke((Action)_ForceHidden);
+
+            StateChanged += (sender, e) => _ForceHidden();
+            Activated += (sender, e) => _OnActivate();
         }
 
-        protected override void OnStateChanged(EventArgs e)
+        private void _OnActivate()
         {
-            base.OnStateChanged(e);
+            HasMoreIssues = false;
+            HasLessIssues = false;
+        }
 
+        private void _ForceHidden()
+        {
             // Keep this Window minimized at all times.
-            // Trying to show it should just launch the Issues URL.
             if (WindowState != WindowState.Minimized)
             {
-                this.Icon = this.CountControl.ImageSource;
-                this.TaskbarItemInfo = new System.Windows.Shell.TaskbarItemInfo
-                {
-                    ProgressState = System.Windows.Shell.TaskbarItemProgressState.Error,
-                    ProgressValue = 1,
-                    Overlay = ResolvedCountControl.ImageSource,
-                };
-                //Process.Start(GithubService.IssuesAssignedToMeUri.ToString());
                 this.WindowState = WindowState.Minimized;
             }
+        }
+
+        private void _OnIssueCountChanged()
+        {
+            var state = HasMoreIssues
+                ? TaskbarItemProgressState.Error
+                : HasLessIssues
+                    ? TaskbarItemProgressState.Normal
+                    : TaskbarItemProgressState.None;
+
+            ImageSource overlay = SecondaryCountControl.Count == 0 ? null : SecondaryCountControl.ImageSource;
+
+            this.TaskbarItemInfo.ProgressState = state;
+            this.TaskbarItemInfo.Overlay = overlay;
         }
 
         // Let the application handle the window's lifetime.
@@ -71,6 +116,11 @@
             }
 
             return false;
+        }
+
+        private void ThumbButtonInfo_Click(object sender, EventArgs e)
+        {
+            ServiceProvider.RequestRefresh();
         }
     }
 }

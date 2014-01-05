@@ -10,8 +10,6 @@
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            MainWindow = new StatusWindow();
-
             base.OnStartup(e);
 
             bool showLogin = false;
@@ -28,6 +26,7 @@
             }
 
             ServiceProvider.Initialize(_settings);
+            MainWindow = new StatusWindow();
 
             if (!showLogin)
             {

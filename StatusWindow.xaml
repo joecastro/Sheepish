@@ -6,10 +6,21 @@
     AllowsTransparency="True"
     Opacity="0"
     Title="Sheepish for YouTrack" Height="350" Width="525"
-    WindowState="Minimized"
+    WindowState="Normal"
     Icon="{Binding ElementName=CountControl, Path=ImageSource}">
+  <Window.Resources>
+    <sheepish:ElementToImageSourceConverter x:Key="ElementToImageSourceConverter"/>
+    <Border x:Key="RefreshElement" Background="{StaticResource RefreshBrush}"/>
+  </Window.Resources>
+  <Window.TaskbarItemInfo>
+    <TaskbarItemInfo ProgressState="None" ProgressValue="1">
+      <TaskbarItemInfo.ThumbButtonInfos>
+        <ThumbButtonInfo IsBackgroundVisible="True" Description="Refresh" DismissWhenClicked="False" Click="ThumbButtonInfo_Click" ImageSource="{Binding Source={StaticResource RefreshElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
+      </TaskbarItemInfo.ThumbButtonInfos>
+    </TaskbarItemInfo>
+  </Window.TaskbarItemInfo>
     <Grid x:Name="MainGrid">
         <sheepish:CountControl x:Name="CountControl" Background="Green" Count="{Binding Source={x:Static sheepish:ServiceProvider.ViewModel}, Path=PrimaryCount}"/>
-        <sheepish:CountControl x:Name="ResolvedCountControl" Background="Gold" Count="{Binding Source={x:Static sheepish:ServiceProvider.ViewModel}, Path=SecondaryCount}"/>
+        <sheepish:CountControl x:Name="SecondaryCountControl" Background="Gold" Count="{Binding Source={x:Static sheepish:ServiceProvider.ViewModel}, Path=SecondaryCount}"/>
     </Grid>
 </Window>

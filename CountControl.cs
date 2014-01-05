@@ -9,12 +9,16 @@
 
     public class CountControl : Control
     {
+        private readonly ElementToImageSourceConverter _elementToImageSourceConverter = new ElementToImageSourceConverter();
+        private readonly FrameworkElement _rootElement;
+        private readonly TextBlock _countBlock;
+
         public static readonly DependencyProperty CountProperty = DependencyProperty.Register(
             "Count",
             typeof(int),
             typeof(CountControl),
             new UIPropertyMetadata(0,
-                (d, e) => ((CountControl)d)._OnDisplayCountChanged()));
+                (d, e) => ((CountControl)d)._UpdateImageSource()));
 
         public int Count
         {
@@ -36,25 +40,20 @@
             private set { SetValue(ImageSourcePropertyKey, value); }
         }
 
-        private void _OnDisplayCountChanged()
+        public CountControl()
         {
-            _UpdateImageSource();
-        }
-
-        private static void _RoundSizeToInt(ref Size iconSize)
-        {
-            iconSize.Width = Math.Round(iconSize.Width);
-            iconSize.Height = Math.Round(iconSize.Height);
-        }
-
-        private void _UpdateImageSource()
-        {
-            Size iconSize = DpiHelper.LogicalSizeToDevice(new Size(SystemParameters.IconWidth, SystemParameters.IconHeight));
-            _RoundSizeToInt(ref iconSize);
-            var element = new Grid
+            _countBlock = new TextBlock
             {
-                Width = iconSize.Width,
-                Height = iconSize.Height,
+                Foreground = Brushes.White,
+                FontSize = 12,
+                Text = Count.ToString(),
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                FontFamily = new FontFamily("Segoe UI")
+            };
+
+            _rootElement = new Grid
+            {
                 Children =
                 {
                     new Border
@@ -64,20 +63,19 @@
                     new Viewbox
                     {
                         Margin = new Thickness(0,2,0,2),
-                        Child = new TextBlock
-                        {
-                            Foreground = Brushes.White,
-                            FontSize = 12,
-                            Text = Count.ToString(),
-                            VerticalAlignment = VerticalAlignment.Center,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            FontFamily = new FontFamily("Segoe UI")
-                        },
+                        Child = _countBlock,
                     },
-                },
+                }
             };
+            _UpdateImageSource();
+        }
 
-            ImageSource = Utility.GenerateBitmapSource(element, (int)element.Width, (int)element.Height, true);
+        private void _UpdateImageSource()
+        {
+            Dispatcher.BeginInvoke((Action)(() => {
+                _countBlock.Text = Count.ToString();
+                ImageSource = (ImageSource)_elementToImageSourceConverter.Convert(_rootElement, typeof(ImageSource), null, null);
+            }));
         }
     }
 }

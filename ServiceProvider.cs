@@ -14,10 +14,7 @@
         public static ViewModel ViewModel { get; private set; }
         private static Settings _settings;
 
-        private static readonly DispatcherTimer _timer = new DispatcherTimer(DispatcherPriority.Normal, Application.Current.Dispatcher)
-        {
-            Interval = _PollInterval,
-        };
+        private static DispatcherTimer _timer;
 
         public static void Initialize(Settings settings)
         {
@@ -30,19 +27,36 @@
             ViewModel.PrimaryQuery = "for: me #Open";
             ViewModel.SecondaryQuery = "for: me #Resolved";
 
-            _timer.Tick += _timer_Tick;
+            _timer = new DispatcherTimer(DispatcherPriority.Normal, Application.Current.Dispatcher)
+            {
+                Interval = _PollInterval,
+            };
+            _timer.Tick += (sender, e) => _UpdateQueryCounts();
         }
 
-        private static void _timer_Tick(object sender, EventArgs e)
+        private static void _UpdateQueryCounts()
         {
-            
+            try
+            {
+                int primaryCount = YouTrackService.GetIssueCount(ViewModel.PrimaryScope, ViewModel.PrimaryQuery);
+                ViewModel.PrimaryCount = primaryCount;
+            }
+            catch
+            {}
+
+            try
+            {
+                int secondaryCount = YouTrackService.GetIssueCount(ViewModel.SecondaryScope, ViewModel.SecondaryQuery);
+                ViewModel.SecondaryCount = secondaryCount;
+            }
+            catch
+            { }
         }
 
         internal static void OnLoggedIn()
         {
             JumpList.SetJumpList(Application.Current, (JumpList)Application.Current.FindResource("SignedInJumpList"));
-            ViewModel.PrimaryCount = YouTrackService.GetIssueCount(ViewModel.PrimaryScope, ViewModel.PrimaryQuery);
-            ViewModel.SecondaryCount = YouTrackService.GetIssueCount(ViewModel.SecondaryScope, ViewModel.SecondaryQuery);
+            _UpdateQueryCounts();
             _timer.Start();
         }
 
@@ -57,6 +71,11 @@
         {
             _settings.ClearLogin();
             Quit();
+        }
+
+        internal static void RequestRefresh()
+        {
+            _UpdateQueryCounts();
         }
     }
 }
