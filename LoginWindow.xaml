@@ -6,7 +6,7 @@
     Height="179">
   <DockPanel>
     <StackPanel DockPanel.Dock="Bottom">
-      <Button Content="sign in" Margin="10" Padding="7,2" HorizontalAlignment="Right" KeyboardNavigation.TabIndex="2" Click="_OnSignInClick"/>
+      <Button Content="sign in" Margin="10" Padding="7,2" HorizontalAlignment="Right" KeyboardNavigation.TabIndex="2" Click="_OnSignInClick" IsDefault="true"/>
       <TextBlock x:Name="ErrorOutput" TextWrapping="Wrap" Foreground="#FFC51313" Text="{Binding Path=ErrorText}">
         <TextBlock.Style>
           <Style TargetType="TextBlock">
