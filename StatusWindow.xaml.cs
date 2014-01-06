@@ -1,20 +1,17 @@
 ﻿namespace Hbo.Sheepish
 {
-    using System;
-    using System.Diagnostics;
-    using System.Windows;
     using Standard;
-    using System.Windows.Media.Imaging;
-    using System.Windows.Media;
+    using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Windows;
+    using System.Windows.Media;
     using System.Windows.Shell;
-using System.Windows.Interop;
 
     public partial class StatusWindow
     {
         private readonly ElementToImageSourceConverter _elementToImageSourceConverter;
-        private HwndSource _hwndSource;
+        private int? _lastPrimary = null;
 
         public static DependencyProperty HasMoreIssuesProperty = DependencyProperty.Register(
             "HasMoreIssues",
@@ -48,8 +45,23 @@ using System.Windows.Interop;
 
             _elementToImageSourceConverter = (ElementToImageSourceConverter)FindResource("ElementToImageSourceConverter");
 
-            Utility.AddDependencyPropertyChangeListener(CountControl, SheepCounterControl.CountProperty, (sender, e) => { });
-            Utility.AddDependencyPropertyChangeListener(SecondaryCountControl, SheepCounterControl.CountProperty, (sender, e) => { });
+            Utility.AddDependencyPropertyChangeListener(CountControl, SheepCounterControl.CountProperty, (sender, e) =>
+            {
+                if (_lastPrimary != null)
+                {
+                    if (_lastPrimary.Value < CountControl.Count)
+                    {
+                        HasMoreIssues = true;
+                    }
+                    if (_lastPrimary.Value > CountControl.Count)
+                    {
+                        HasLessIssues = true;
+                    }
+                }
+                _lastPrimary = CountControl.Count;
+                _OnIssueCountChanged();
+            });
+            Utility.AddDependencyPropertyChangeListener(SecondaryCountControl, SheepCounterControl.CountProperty, (sender, e) => _OnIssueCountChanged());
 
             // Let the window get created and shown normally first, and then explicitly minimized.
             // If this happens too early then the Shell tries to be helpful and create a fake preview window
@@ -63,13 +75,6 @@ using System.Windows.Interop;
                         _ForceHidden();
                         _OnIssueCountChanged();
                     }));
-
-                IntPtr hwnd = new WindowInteropHelper(this).Handle;
-                _hwndSource = HwndSource.FromHwnd(hwnd);
-                _hwndSource.AddHook(_WndProc);
-
-                //NativeMethods.DwmSetWindowAttributeForceIconicRepresentation(hwnd, true);
-                //NativeMethods.DwmSetWindowAttributeHasIconicBitmap(hwnd, true);
             };
 
             StateChanged += (sender, e) => _ForceHidden();
@@ -93,6 +98,9 @@ using System.Windows.Interop;
 
         private void _OnIssueCountChanged()
         {
+            // Explicitly force the Icon to update.  We're bound to the control through a converter so it doesn't see this change.
+            this.GetBindingExpression(Window.IconProperty).UpdateTarget();
+
             var state = HasMoreIssues
                 ? TaskbarItemProgressState.Error
                 : HasLessIssues
@@ -144,21 +152,5 @@ using System.Windows.Interop;
         {
             ServiceProvider.RequestRefresh();
         }
-
-        #region Win32 interop stuff for thumbnail preview
-
-        private IntPtr _WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            var message = (WM)msg;
-            if (message == WM.DWMSENDICONICTHUMBNAIL)
-            { 
-            }
-            else if (message == WM.DWMSENDICONICLIVEPREVIEWBITMAP)
-            { 
-            }
-
-            return IntPtr.Zero;
-        }
-        #endregion
     }
 }
