@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="Hbo.Sheepish.SheepCounterControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    mc:Ignorable="d" 
+    x:Name="ThisControl"
+    d:DesignHeight="300" d:DesignWidth="300">
+  <UserControl.Template>
+    <ControlTemplate TargetType="UserControl">
+      <ContentPresenter/>
+    </ControlTemplate>
+  </UserControl.Template>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="43*"/>
+      <RowDefinition Height="153*"/>
+      <RowDefinition Height="104*"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="62*"/>
+      <ColumnDefinition Width="61*"/>
+      <ColumnDefinition Width="31*"/>
+    </Grid.ColumnDefinitions>
+    <Border Grid.RowSpan="3" Grid.ColumnSpan="3">
+      <Border.Background>
+        <DrawingBrush Stretch="Uniform">
+          <DrawingBrush.Drawing>
+            <GeometryDrawing Brush="{Binding ElementName=ThisControl, Path=Background}" Geometry="{StaticResource SheepSilhouetteGeometry}"/>
+          </DrawingBrush.Drawing>
+        </DrawingBrush>
+      </Border.Background>
+    </Border>
+    <Viewbox Grid.Row="1" Grid.Column="1">
+      <TextBlock Foreground="White" FontFamily="Segoe UI" Text="{Binding ElementName=ThisControl, Path=Count}"/>
+    </Viewbox>
+  </Grid>
+</UserControl>

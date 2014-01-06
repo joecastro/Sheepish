@@ -1,20 +1,16 @@
-﻿
-namespace Hbo.Sheepish
+﻿namespace Hbo.Sheepish
 {
     using System;
-    using System.Collections.Generic;
     using System.ComponentModel;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     class ViewModel : INotifyPropertyChanged
     {
         private string _primaryQuery;
         private string _secondaryQuery;
-
         private int _primaryCount;
         private int _secondaryCount;
+        private string _primaryScope;
+        private string _secondaryScope;
 
         public string PrimaryQuery
         {
@@ -36,6 +32,16 @@ namespace Hbo.Sheepish
             }
         }
 
+        public string PrimaryScope
+        {
+            get { return _primaryScope; }
+            set
+            {
+                _primaryScope = value;
+                _NotifyPropertyChanged("PrimaryScope");
+            }
+        }
+
         public string SecondaryQuery
         {
             get { return _secondaryQuery; }
@@ -53,6 +59,16 @@ namespace Hbo.Sheepish
             {
                 _secondaryCount = value;
                 _NotifyPropertyChanged("SecondaryCount");
+            }
+        }
+
+        public string SecondaryScope
+        {
+            get { return _secondaryScope; }
+            set
+            {
+                _secondaryScope = value;
+                _NotifyPropertyChanged("SecondaryScope");
             }
         }
 

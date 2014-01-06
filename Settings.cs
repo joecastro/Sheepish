@@ -1,39 +1,33 @@
 ﻿namespace Hbo.Sheepish
 {
+    using Newtonsoft.Json;
+    using Standard;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Net;
-    using System.Threading.Tasks;
-    using Newtonsoft.Json;
-    using Standard;
+    using System.Runtime.Serialization.Formatters.Binary;
 
     public class Settings
     {
         private static readonly string _SettingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Sheepish");
         private static readonly string _Path = Path.Combine(_SettingsDirectory, "Settings.json");
 
-        public string UserLogin { get; private set; }
+        public string UserLogin { get; set; }
         public string PrimaryQuery { get; set; }
         public string PrimaryQueryScope { get; set; }
         public string SecondaryQuery { get; set; }
         public string SecondaryQueryScope { get; set; }
+        public CookieContainer CookieContainer { get; private set; }
 
-        private Settings() { }
+        private static readonly BinaryFormatter _formatter = new BinaryFormatter();
 
-        public static Settings Create()
+        public Settings()
         {
-            var settings = new Settings();
-
-            if (!settings._VerifyAndUpdateUserAsync())
-            {
-                throw new ArgumentException("oauthToken is invalid", "oauthToken");
-            }
-
-            return settings;
+            CookieContainer = new CookieContainer();
         }
 
-        public static Settings TryLoad()
+        public static Settings Load()
         {
             Utility.EnsureDirectory(_SettingsDirectory);
             try
@@ -50,20 +44,28 @@
                     return null;
                 }
 
+                CookieContainer jar = null;
+
+                try
+                {
+                    var serializedJar = System.Convert.FromBase64String(json["cookie_jar"].ToString());
+                    jar = (CookieContainer)_formatter.Deserialize(new MemoryStream(serializedJar));
+                }
+                catch
+                {
+                }
+
                 var maybeSettings = new Settings
                 {
+                    UserLogin = json["login"],
                     PrimaryQuery = json["primary_query"],
                     PrimaryQueryScope = json["primary_scope"],
                     SecondaryQuery = json["secondary_query"],
                     SecondaryQueryScope = json["secondary_scope"],
+                    CookieContainer = jar ?? new CookieContainer(),
                 };
 
-                if (maybeSettings._VerifyAndUpdateUserAsync())
-                {
-                    return maybeSettings;
-                }
-
-                return null;
+                return maybeSettings;
             }
             catch { }
             return null;
@@ -72,25 +74,21 @@
         /// <summary>
         /// Clears the Settings file from disk.
         /// </summary>
-        public static void Clear()
+        public void ClearLogin()
         {
-            Utility.SafeDeleteFile(_Path);
-        }
-
-        private bool _VerifyAndUpdateUserAsync()
-        {
-            try
-            {
-                // Mostly just care that we don't get a 400 something from this call.
-                YouTrackService.User currentUser = ServiceProvider.YouTrackService.GetCurrentUser();
-                UserLogin = currentUser.Login;
-            }
-            catch (WebException) { }
-            return UserLogin != null;
+            UserLogin = "";
+            CookieContainer = new CookieContainer();
         }
 
         public void Save()
         {
+            string serializedJar = null;
+            using (var memstream = new MemoryStream())
+            {
+                _formatter.Serialize(memstream, CookieContainer);
+                serializedJar = Convert.ToBase64String(memstream.ToArray());
+            }
+
             var dict = new Dictionary<string, object>
             {
                 { "description", "Cached settings for Sheepish" },
@@ -101,6 +99,7 @@
                 { "primary_scope", PrimaryQueryScope },
                 { "secondary_query", SecondaryQuery },
                 { "secondary_scope", SecondaryQueryScope },
+                { "cookie_jar", serializedJar },
             };
 
             Utility.EnsureDirectory(Path.GetDirectoryName(_Path));

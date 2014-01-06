@@ -6,7 +6,7 @@
     using System.IO;
     using System.Net;
     using System.Text;
-    using System.Threading.Tasks;
+    using System.Threading;
     using System.Xml.Linq;
 
     // General documentation for the YouTrack REST APIs: http://confluence.jetbrains.com/display/YTD5/YouTrack+REST+API+Reference
@@ -27,15 +27,19 @@
 
         private static readonly string _UserAgentString = "HBO Sheepish Client";
         private readonly string _BaseApiUrl;
+        private readonly CookieContainer _CookieJar = new CookieContainer();
+        private const int _MaxRetryCount = 8;
+        private static readonly TimeSpan _RetryDelay = new TimeSpan(1000);
 
-        #region Async Http Verb Implementations
+        #region Http Verb Implementations
 
-        private static XDocument _Get(string path)
+        private static XDocument _Get(string path, CookieContainer jar)
         {
             var webRequest = (HttpWebRequest)HttpWebRequest.Create(path);
             webRequest.Method = "GET";
             webRequest.Accept = "application/xml";
             webRequest.UserAgent = _UserAgentString;
+            webRequest.CookieContainer = jar;
 
             WebResponse response = webRequest.GetResponse();
             try
@@ -51,40 +55,21 @@
             }
         }
 
-        private static async Task<XDocument> _GetAsync(string path)
-        {
-            var webRequest = (HttpWebRequest)HttpWebRequest.Create(path);
-            webRequest.Method = "GET";
-            webRequest.Accept = "application/xml";
-            webRequest.UserAgent = _UserAgentString;
-
-            WebResponse response = await webRequest.GetResponseAsync();
-            try
-            {
-                using (var reader = new StreamReader(response.GetResponseStream()))
-                {
-                    return XDocument.Parse(await reader.ReadToEndAsync());
-                }
-            }
-            finally
-            {
-                response.Close();
-            }
-        }
-
-        private static async Task<XDocument> _PostAsync(string path, string postData)
+        private static XDocument _Post(string path, string postData, CookieContainer jar)
         {
             var webRequest = (HttpWebRequest)HttpWebRequest.Create(path);
             webRequest.Method = "POST";
             webRequest.UserAgent = _UserAgentString;
             webRequest.Accept = "application/xml";
             webRequest.ContentType = "text/plain; charset=utf-8";
+            webRequest.CookieContainer = jar;
+
             if (!string.IsNullOrEmpty(postData))
             {
                 byte[] dataBytes = Encoding.UTF8.GetBytes(postData);
 
                 webRequest.ContentLength = postData.Length;
-                using (var dataStream = await webRequest.GetRequestStreamAsync())
+                using (var dataStream = webRequest.GetRequestStream())
                 {
                     dataStream.Write(dataBytes, 0, dataBytes.Length);
                 }
@@ -94,12 +79,12 @@
                 webRequest.ContentLength = 0;
             }
 
-            var response = await webRequest.GetResponseAsync();
+            var response = webRequest.GetResponse();
             try
             {
                 using (var reader = new StreamReader(response.GetResponseStream()))
                 {
-                    return XDocument.Parse(await reader.ReadToEndAsync());
+                    return XDocument.Parse(reader.ReadToEnd());
                 }
             }
             finally
@@ -110,38 +95,51 @@
 
         #endregion
 
-        public YouTrackService(string baseUri)
+        public YouTrackService(string baseUri, CookieContainer jar)
         {
             _BaseApiUrl = baseUri;
+            _CookieJar = jar;
         }
 
-        public async Task Login(string username, string password) 
+        public void Login(string username, string password) 
         {
             var uri = String.Format("{0}/user/login?login={1}&password={2}", _BaseApiUrl, username, password);
-            await _PostAsync(uri, null);
+            _Post(uri, null, _CookieJar);
         }
 
         public User GetCurrentUser()
         {
             var uri = String.Format("{0}/user/current", _BaseApiUrl);
-            var response = _Get(uri);
+            var response = _Get(uri, _CookieJar);
             return new User
             {
                 Login = response.ToString()
             };
         }
 
-        public async Task<List<Project>> GetProjects()
+        public List<Project> GetProjects()
         {
-            var response = await _GetAsync(String.Format("{0}/project/all", _BaseApiUrl));
+            var response = _Get(String.Format("{0}/project/all", _BaseApiUrl), _CookieJar);
             return new List<Project> 
             {
                 new Project { Name = response.ToString() }
             };
         }
 
-        public int GetIssueCount(string projectShortName, string query) {
-            return query.GetHashCode() & 0xFF;
+        public int GetIssueCount(string projectShortName, string query)
+        {
+            for (int i = 0; i < _MaxRetryCount; ++i)
+            {
+                var path = string.Format("{0}/issue/count?filter={1}", _BaseApiUrl, Utility.UrlEncode(query));
+                var response = _Get(path, _CookieJar);
+                int count = int.Parse(response.Root.Value);
+                if (count != -1)
+                {
+                    return count;
+                }
+                Thread.Sleep(_RetryDelay);
+            }
+            throw new Exception("Unable to determine number of issues from server.");
         }
     }
 }
