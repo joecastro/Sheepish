@@ -9,7 +9,7 @@
         <TextBox x:Name="PrimaryQueryBox" Margin="10,0" MinWidth="180"></TextBox>
       </DockPanel>
     </GroupBox>
-    <GroupBox Header="Secondary Query" HorizontalAlignment="Stretch" Margin="6,2" Padding="0,10">
+    <GroupBox Header="Alternate Query" HorizontalAlignment="Stretch" Margin="6,2" Padding="0,10">
       <DockPanel>
         <ComboBox x:Name="SecondaryScopeSelect" DockPanel.Dock="Left" HorizontalAlignment="Left" Margin="10,0" VerticalAlignment="Top" MinWidth="120"/>
         <TextBox x:Name="SecondaryQueryBox" Margin="10,0" MinWidth="180"></TextBox>

@@ -86,7 +86,7 @@
                         CustomCategory = "Recently Updated (Secondary)",
                         Title = issueSummary.Summary,
                         Description = issueSummary.Id,
-                        Arguments = "-uri:" + YouTrackService.GetIssueUri(issueSummary)
+                        Arguments = "-issue:" + issueSummary.Id,
                     });
             }
 
@@ -98,7 +98,7 @@
                         CustomCategory = "Recently Updated (Primary)",
                         Title = issueSummary.Summary,
                         Description = issueSummary.Id,
-                        Arguments = "-uri:" + YouTrackService.GetIssueUri(issueSummary)
+                        Arguments = "-issue:" + issueSummary.Id,
                     });
             }
 
@@ -167,6 +167,11 @@
         internal static void ShowQuery(YouTrackService.SavedSearch scope, string query)
         {
             Process.Start(YouTrackService.GetQueryUri(scope, query).ToString());
+        }
+
+        internal static void ShowIssue(YouTrackService.IssueSummary issue)
+        {
+            Process.Start(YouTrackService.GetIssueUri(issue).ToString());
         }
     }
 }

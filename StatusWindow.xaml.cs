@@ -119,6 +119,8 @@
 
             ImageSource overlay = SecondaryCountControl.Count == 0 ? null : (ImageSource)_elementToImageSourceConverter.Convert(SecondaryCountControl, typeof(ImageSource), "Small", null);
 
+            PrimaryThumbButton.Description = string.Format("View {0} issues in the primary query", CountControl.Count);
+            SecondaryThumbButton.Description = string.Format("View {0} issues in the alternate query", SecondaryCountControl.Count);
             this.TaskbarItemInfo.ProgressState = state;
             this.TaskbarItemInfo.Overlay = overlay;
         }
@@ -137,22 +139,29 @@
                 commandLineArgs = new[] { null, "-primary" };
             }
 
-            int argIndex = 1;
-            while (argIndex < commandLineArgs.Count)
+            for (int argIndex = 1; argIndex < commandLineArgs.Count; ++argIndex)
             {
                 string commandSwitch = commandLineArgs[argIndex].ToLowerInvariant();
-                switch (commandSwitch)
+                if (commandSwitch.StartsWith("-issue:") || commandSwitch.StartsWith("/issue:"))
                 {
-                    case "-signout":
-                    case "/signout":
-                        ServiceProvider.SignOut();
-                        return true;
-                    case "-exit":
-                    case "/exit":
-                        ServiceProvider.Quit();
-                        return true;
+                    string id = commandSwitch.Substring("-issue:".Length);
+                    ServiceProvider.ShowIssue(new YouTrackService.IssueSummary { Id = id, Summary = "summary" });
                 }
-                ++argIndex;
+                else switch (commandSwitch)
+                {
+                case "-signout":
+                case "/signout":
+                    ServiceProvider.SignOut();
+                    return true;
+                case "-exit":
+                case "/exit":
+                    ServiceProvider.Quit();
+                    return true;
+                case "-edit":
+                case "/edit":
+                    _OnEditClicked(this, EventArgs.Empty);
+                    return true;
+                }
             }
 
             return false;

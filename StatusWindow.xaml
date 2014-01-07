@@ -35,8 +35,8 @@
   <Window.TaskbarItemInfo>
     <TaskbarItemInfo ProgressState="None" ProgressValue="1">
       <TaskbarItemInfo.ThumbButtonInfos>
-        <ThumbButtonInfo IsBackgroundVisible="True" Description="View primary issues" DismissWhenClicked="True" Click="_OnPrimaryClicked" ImageSource="{Binding Source={StaticResource PrimaryBugElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
-        <ThumbButtonInfo IsBackgroundVisible="True" Description="View secondary issues" DismissWhenClicked="True" Click="_OnSecondaryClicked" ImageSource="{Binding Source={StaticResource SecondaryBugElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
+        <ThumbButtonInfo x:Name="PrimaryThumbButton" IsBackgroundVisible="True" Description="View primary issues" DismissWhenClicked="True" Click="_OnPrimaryClicked" ImageSource="{Binding Source={StaticResource PrimaryBugElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
+        <ThumbButtonInfo x:Name="SecondaryThumbButton" IsBackgroundVisible="True" Description="View secondary issues" DismissWhenClicked="True" Click="_OnSecondaryClicked" ImageSource="{Binding Source={StaticResource SecondaryBugElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
         <ThumbButtonInfo IsBackgroundVisible="False" IsEnabled="False"/>
         <ThumbButtonInfo IsBackgroundVisible="True" Description="Change Queries" DismissWhenClicked="True" Click="_OnEditClicked" ImageSource="{Binding Source={StaticResource EditElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
         <ThumbButtonInfo IsBackgroundVisible="True" Description="Refresh" DismissWhenClicked="False" Click="_OnRefreshClicked" ImageSource="{Binding Source={StaticResource RefreshElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
