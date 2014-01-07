@@ -11,6 +11,8 @@
     public partial class StatusWindow
     {
         private readonly ElementToImageSourceConverter _elementToImageSourceConverter;
+
+        // Keep track of this so we can tell direction of change.
         private int? _lastPrimary = null;
 
         public static DependencyProperty HasMoreIssuesProperty = DependencyProperty.Register(
@@ -45,8 +47,13 @@
 
             _elementToImageSourceConverter = (ElementToImageSourceConverter)FindResource("ElementToImageSourceConverter");
 
+            // Normally we'd have to use a named delegate here so we can unhook it and prevent a memory leak,
+            // but this window is bound to the lifetime of the app so there isn't the need.
             Utility.AddDependencyPropertyChangeListener(CountControl, SheepCounterControl.CountProperty, (sender, e) =>
             {
+                // Don't make the background red on initial render.
+                // Often the window will initially load with the count controls at zero, so wait till it's not empty
+                // to start this check
                 if (_lastPrimary != null)
                 {
                     if (_lastPrimary.Value < CountControl.Count)
@@ -57,8 +64,12 @@
                     {
                         HasLessIssues = true;
                     }
+                    _lastPrimary = CountControl.Count;
                 }
-                _lastPrimary = CountControl.Count;
+                else if (CountControl.Count != 0)
+                {
+                    _lastPrimary = CountControl.Count;
+                }
                 _OnIssueCountChanged();
             });
             Utility.AddDependencyPropertyChangeListener(SecondaryCountControl, SheepCounterControl.CountProperty, (sender, e) => _OnIssueCountChanged());
@@ -71,20 +82,12 @@
                 // But clear opacity immediately (keeping it opaque for the sake of the design surface)
                 Opacity = 0;
                 Dispatcher.BeginInvoke((Action)(() =>
-                    {
-                        _ForceHidden();
-                        _OnIssueCountChanged();
-                    }));
+                {
+                    WindowState = WindowState.Minimized;
+                    _OnIssueCountChanged();
+                    StateChanged += (sender2, e2) => _ForceHidden();
+                }));
             };
-
-            StateChanged += (sender, e) => _ForceHidden();
-            Activated += (sender, e) => _OnActivate();
-        }
-
-        private void _OnActivate()
-        {
-            HasMoreIssues = false;
-            HasLessIssues = false;
         }
 
         private void _ForceHidden()
@@ -93,6 +96,13 @@
             if (WindowState != WindowState.Minimized)
             {
                 this.WindowState = WindowState.Minimized;
+
+                if (!ServiceProvider.ViewModel.ShowingEditDialog)
+                {
+                    HasMoreIssues = false;
+                    HasLessIssues = false;
+                    ServiceProvider.ShowQuery(ServiceProvider.ViewModel.PrimaryScope, ServiceProvider.ViewModel.PrimaryQuery);
+                }
             }
         }
 
@@ -109,6 +119,8 @@
 
             ImageSource overlay = SecondaryCountControl.Count == 0 ? null : (ImageSource)_elementToImageSourceConverter.Convert(SecondaryCountControl, typeof(ImageSource), "Small", null);
 
+            PrimaryThumbButton.Description = string.Format("View {0} issues in the primary query", CountControl.Count);
+            SecondaryThumbButton.Description = string.Format("View {0} issues in the alternate query", SecondaryCountControl.Count);
             this.TaskbarItemInfo.ProgressState = state;
             this.TaskbarItemInfo.Overlay = overlay;
         }
@@ -127,30 +139,57 @@
                 commandLineArgs = new[] { null, "-primary" };
             }
 
-            int argIndex = 1;
-            while (argIndex < commandLineArgs.Count)
+            for (int argIndex = 1; argIndex < commandLineArgs.Count; ++argIndex)
             {
                 string commandSwitch = commandLineArgs[argIndex].ToLowerInvariant();
-                switch (commandSwitch)
+                if (commandSwitch.StartsWith("-issue:") || commandSwitch.StartsWith("/issue:"))
                 {
-                    case "-signout":
-                    case "/signout":
-                        ServiceProvider.SignOut();
-                        return true;
-                    case "-exit":
-                    case "/exit":
-                        ServiceProvider.Quit();
-                        return true;
+                    string id = commandSwitch.Substring("-issue:".Length);
+                    ServiceProvider.ShowIssue(new YouTrackService.IssueSummary { Id = id, Summary = "summary" });
                 }
-                ++argIndex;
+                else switch (commandSwitch)
+                {
+                case "-signout":
+                case "/signout":
+                    ServiceProvider.SignOut();
+                    return true;
+                case "-exit":
+                case "/exit":
+                    ServiceProvider.Quit();
+                    return true;
+                case "-edit":
+                case "/edit":
+                    _OnEditClicked(this, EventArgs.Empty);
+                    return true;
+                }
             }
 
             return false;
         }
 
-        private void ThumbButtonInfo_Click(object sender, EventArgs e)
+        private void _OnRefreshClicked(object sender, EventArgs e)
         {
             ServiceProvider.RequestRefresh();
+        }
+
+        private void _OnSignoutClicked(object sender, EventArgs e)
+        {
+            ServiceProvider.SignOut();
+        }
+
+        private void _OnEditClicked(object sender, EventArgs e)
+        {
+            ServiceProvider.ShowQueryDialog();
+        }
+
+        private void _OnPrimaryClicked(object sender, EventArgs e)
+        {
+            ServiceProvider.ShowQuery(ServiceProvider.ViewModel.PrimaryScope, ServiceProvider.ViewModel.PrimaryQuery);
+        }
+
+        private void _OnSecondaryClicked(object sender, EventArgs e)
+        {
+            ServiceProvider.ShowQuery(ServiceProvider.ViewModel.SecondaryScope, ServiceProvider.ViewModel.SecondaryQuery);
         }
     }
 }
