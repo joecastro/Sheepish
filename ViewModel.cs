@@ -1,6 +1,6 @@
 ﻿namespace Hbo.Sheepish
 {
-    using System;
+    using System.Collections.Generic;
     using System.ComponentModel;
 
     class ViewModel : INotifyPropertyChanged
@@ -9,8 +9,9 @@
         private string _secondaryQuery;
         private int _primaryCount;
         private int _secondaryCount;
-        private string _primaryScope;
-        private string _secondaryScope;
+        private YouTrackService.SavedSearch _primaryScope;
+        private YouTrackService.SavedSearch _secondaryScope;
+        private IList<YouTrackService.SavedSearch> _scopes;
 
         public string PrimaryQuery
         {
@@ -32,7 +33,7 @@
             }
         }
 
-        public string PrimaryScope
+        public YouTrackService.SavedSearch PrimaryScope
         {
             get { return _primaryScope; }
             set
@@ -62,13 +63,23 @@
             }
         }
 
-        public string SecondaryScope
+        public YouTrackService.SavedSearch SecondaryScope
         {
             get { return _secondaryScope; }
             set
             {
                 _secondaryScope = value;
                 _NotifyPropertyChanged("SecondaryScope");
+            }
+        }
+
+        public IList<YouTrackService.SavedSearch> Scopes
+        {
+            get { return _scopes; }
+            set
+            {
+                _scopes = value;
+                _NotifyPropertyChanged("Scopes");
             }
         }
 

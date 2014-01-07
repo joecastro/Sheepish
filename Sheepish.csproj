@@ -88,6 +88,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="QueryDialog.xaml.cs">
+      <DependentUpon>QueryDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SheepCounterControl.xaml.cs">
       <DependentUpon>SheepCounterControl.xaml</DependentUpon>
     </Compile>
@@ -161,6 +164,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="QueryDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="SheepCounterControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

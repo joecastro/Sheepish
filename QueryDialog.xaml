@@ -1,0 +1,19 @@
+﻿<Window x:Class="Hbo.Sheepish.QueryDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="QueryDialog" SizeToContent="WidthAndHeight">
+  <StackPanel>
+    <GroupBox Header="Primary Query" HorizontalAlignment="Stretch" Margin="6,2" Padding="0,10">
+      <DockPanel>
+        <ComboBox DockPanel.Dock="Left" HorizontalAlignment="Left" Margin="10, 0" VerticalAlignment="Top" Width="120"/>
+        <TextBox Margin="10,0" MinWidth="180"></TextBox>
+      </DockPanel>
+    </GroupBox>
+    <GroupBox Header="Secondary Query" HorizontalAlignment="Stretch" Margin="6,2" Padding="0,10">
+      <DockPanel>
+        <ComboBox DockPanel.Dock="Left" HorizontalAlignment="Left" Margin="10,0" VerticalAlignment="Top" Width="120"/>
+        <TextBox Margin="10,0" MinWidth="180"></TextBox>
+      </DockPanel>
+    </GroupBox>
+  </StackPanel>
+</Window>
