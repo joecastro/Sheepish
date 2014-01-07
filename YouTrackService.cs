@@ -97,7 +97,7 @@
 
             public override int GetHashCode()
             {
-                return Name.GetHashCode() ^ (Query.GetHashCode() << 4) ^ ((ProjectScope == null ? 0 : ProjectScope.GetHashCode()) >> 13);
+                return Name.GetHashCode() ^ ((Query ?? "").GetHashCode() << 4) ^ ((ProjectScope == null ? 0 : ProjectScope.GetHashCode()) >> 13);
             }
 
             public override string ToString()
@@ -189,14 +189,14 @@
 
         public void Login(string username, string password) 
         {
-            var uri = string.Format("{0}/rest/user/login?login={1}&password={2}", _BaseUrl, username, password);
-            _Post(uri, null, _CookieJar);
+            var path = string.Format("{0}/rest/user/login?login={1}&password={2}", _BaseUrl, username, password);
+            _Post(path, null, _CookieJar);
         }
 
         public User GetCurrentUser()
         {
-            var uri = string.Format("{0}/rest/user/current", _BaseUrl);
-            var response = _Get(uri, _CookieJar);
+            var path = string.Format("{0}/rest/user/current", _BaseUrl);
+            var response = _Get(path, _CookieJar);
             return new User
             {
                 Login = response.ToString()
@@ -205,11 +205,16 @@
 
         public List<Project> GetProjects()
         {
-            var response = _Get(string.Format("{0}/rest/project/all", _BaseUrl), _CookieJar);
-            return new List<Project> 
-            {
-                new Project { Name = response.ToString() }
-            };
+            var path = string.Format("{0}/rest/project/all", _BaseUrl);
+            var response = _Get(path, _CookieJar);
+            var retList = new List<Project>(
+                from project in response.Element("projects").Elements() select new Project
+                {
+                    Name = project.Attribute("name").Value,
+                    ShortName = project.Attribute("shortName").Value,
+                    Description = project.Attribute("description") != null ? project.Attribute("description").Value : "",
+                });
+            return retList;
         }
 
         public List<SavedSearch> GetSavedSearches()
@@ -223,7 +228,14 @@
                 });
 
             var savedSearchResponse = _Get(string.Format("{0}/rest/user/search", _BaseUrl), _CookieJar);
-            retList.Add(new SavedSearch { Name = savedSearchResponse.ToString() });
+            retList.AddRange(
+                from savedSearch in savedSearchResponse.Element("savedSearches").Elements()
+                select new SavedSearch
+                    {
+                        Name = savedSearch.Attribute("name").Value,
+                        Query = savedSearch.Value,
+                        ProjectScope = null,
+                    });
 
             return retList;
         }
@@ -275,7 +287,7 @@
 
             string queryPart = (scope.Query ?? "") + " " + queryFilter;
 
-            return new Uri(string.Format("{0}?q={1}", prefix, queryPart));
+            return new Uri(string.Format("{0}?q={1}", prefix, Utility.UrlEncode(queryPart.Trim())));
         }
 
         public Uri GetIssueUri(IssueSummary summary)

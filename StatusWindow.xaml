@@ -7,6 +7,7 @@
     Opacity="1"
     Title="Sheepish for YouTrack" Height="300" Width="600"
     WindowState="Normal"
+    ShowInTaskbar="{Binding Source={x:Static sheepish:ServiceProvider.ViewModel}, Path=ShowingEditDialog, Converter={StaticResource InverseBooleanConverter}}"
     Icon="{Binding ElementName=CountControl, Converter={StaticResource ElementToImageSourceConverter}}">
   <Window.Resources>
     <Border x:Key="RefreshElement" Background="{StaticResource RefreshBrush}"/>
@@ -34,12 +35,12 @@
   <Window.TaskbarItemInfo>
     <TaskbarItemInfo ProgressState="None" ProgressValue="1">
       <TaskbarItemInfo.ThumbButtonInfos>
-        <ThumbButtonInfo IsBackgroundVisible="True" Description="Refresh" DismissWhenClicked="False" Click="ThumbButtonInfo_Click" ImageSource="{Binding Source={StaticResource PrimaryBugElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
-        <ThumbButtonInfo IsBackgroundVisible="True" Description="Refresh" DismissWhenClicked="False" Click="ThumbButtonInfo_Click" ImageSource="{Binding Source={StaticResource SecondaryBugElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
+        <ThumbButtonInfo IsBackgroundVisible="True" Description="View primary issues" DismissWhenClicked="True" Click="_OnPrimaryClicked" ImageSource="{Binding Source={StaticResource PrimaryBugElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
+        <ThumbButtonInfo IsBackgroundVisible="True" Description="View secondary issues" DismissWhenClicked="True" Click="_OnSecondaryClicked" ImageSource="{Binding Source={StaticResource SecondaryBugElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
         <ThumbButtonInfo IsBackgroundVisible="False" IsEnabled="False"/>
-        <ThumbButtonInfo IsBackgroundVisible="True" Description="Change Queries" DismissWhenClicked="False" Click="ThumbButtonInfo_Click" ImageSource="{Binding Source={StaticResource EditElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
-        <ThumbButtonInfo IsBackgroundVisible="True" Description="Refresh" DismissWhenClicked="False" Click="ThumbButtonInfo_Click" ImageSource="{Binding Source={StaticResource RefreshElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
-        <ThumbButtonInfo IsBackgroundVisible="True" Description="Refresh" DismissWhenClicked="False" Click="ThumbButtonInfo_Click" ImageSource="{Binding Source={StaticResource LeaveElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
+        <ThumbButtonInfo IsBackgroundVisible="True" Description="Change Queries" DismissWhenClicked="True" Click="_OnEditClicked" ImageSource="{Binding Source={StaticResource EditElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
+        <ThumbButtonInfo IsBackgroundVisible="True" Description="Refresh" DismissWhenClicked="False" Click="_OnRefreshClicked" ImageSource="{Binding Source={StaticResource RefreshElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
+        <ThumbButtonInfo IsBackgroundVisible="True" Description="Signout of Sheepish" DismissWhenClicked="True" Click="_OnSignoutClicked" ImageSource="{Binding Source={StaticResource LeaveElement}, Converter={StaticResource ElementToImageSourceConverter}, ConverterParameter=Small}"/>
       </TaskbarItemInfo.ThumbButtonInfos>
     </TaskbarItemInfo>
   </Window.TaskbarItemInfo>

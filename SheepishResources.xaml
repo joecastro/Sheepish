@@ -1,11 +1,21 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sheepish="clr-namespace:Hbo.Sheepish">
+  <!-- Static converters -->
+  <sheepish:ElementToImageSourceConverter x:Key="ElementToImageSourceConverter"/>
+  <sheepish:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+
   <JumpList x:Key="SignedOutJumpList"></JumpList>
   
   <JumpList x:Key="SignedInJumpList">
-    <JumpTask Arguments="/SignOut" Title="Sign out"/>
-    <JumpTask Arguments="/Exit" Title="Quit Sheepish"/>
+    <!-- Keeping these off because of the limited real estate for tasks and recently updated issues.
+         The user can still launch these through the thumb buttons
+    <JumpTask Arguments="/Primary" Title="Open primary query" IconResourceIndex="-1"/>
+    <JumpTask Arguments="/Secondary" Title="Open secondary query" IconResourceIndex="-1"/>
+    -->
+    <JumpTask Arguments="/Edit" Title="Edit queries" IconResourceIndex="-1"/>
+    <JumpTask Arguments="/SignOut" Title="Sign out" IconResourceIndex="-1"/>
+    <JumpTask Arguments="/Exit" Title="Quit Sheepish" IconResourceIndex="-1"/>
   </JumpList>
 
   <!-- Temporarily adapted from http://www.canstockphoto.com/black-silhouette-of-sheep-on-a-light-16229989.html, without permission :(, pending our artists giving me something better. -->
@@ -63,7 +73,4 @@
       </DrawingGroup>
     </DrawingBrush.Drawing>
   </DrawingBrush>
-
-  <sheepish:ElementToImageSourceConverter x:Key="ElementToImageSourceConverter"/>
-
 </ResourceDictionary>

@@ -12,6 +12,7 @@
         private YouTrackService.SavedSearch _primaryScope;
         private YouTrackService.SavedSearch _secondaryScope;
         private IList<YouTrackService.SavedSearch> _scopes;
+        private bool _showingEditDialog = false;
 
         public string PrimaryQuery
         {
@@ -80,6 +81,16 @@
             {
                 _scopes = value;
                 _NotifyPropertyChanged("Scopes");
+            }
+        }
+
+        public bool ShowingEditDialog
+        {
+            get { return _showingEditDialog; }
+            set 
+            {
+                _showingEditDialog = value;
+                _NotifyPropertyChanged("ShowingEditDialog");
             }
         }
 
