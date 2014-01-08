@@ -17,6 +17,7 @@
         {
             public string Login { get; set; }
             public string Email { get; set; }
+            public string FullName { get; set; }
         }
 
         public class Project 
@@ -199,7 +200,9 @@
             var response = _Get(path, _CookieJar);
             return new User
             {
-                Login = response.ToString()
+                Login = response.Element("user").Attribute("login").Value,
+                Email = response.Element("user").Attribute("email").Value,
+                FullName = response.Element("user").Attribute("fullName").Value,
             };
         }
 
